@@ -1,39 +1,29 @@
 import random
+
+import cromosoma
 from archivo_atsp import ArchivoATSP
-
-
-def generar_solucion_aleatoria(dimension):
-
-    ciudades_restantes = []
-    solucion = []
-
-    for i in range(dimension):
-        ciudades_restantes.append(i)
-
-    while len(ciudades_restantes) > 0:
-
-        indice_ciudad_aleatoria = random.randint(0, len(ciudades_restantes)-1)
-        ciudad_aleatoria = ciudades_restantes[indice_ciudad_aleatoria]
-        solucion.append(ciudad_aleatoria)
-
-        if len(ciudades_restantes) >= 2:
-            ciudades_restantes[indice_ciudad_aleatoria] = ciudades_restantes[len(ciudades_restantes)-1]
-
-        ciudades_restantes.pop()
-
-    solucion.append(solucion[0])
-
-    return solucion
+from solucionador_atsp import SolucionadorATSP
 
 
 def main():
 
     archivo = ArchivoATSP("./data/br17.atsp")
-    matriz = archivo.get_matriz()
-    dimension = archivo.get_dimension()
+    solucionador = SolucionadorATSP(
+        archivo,
+        {
+            "tamano_poblacion": 50,
+            "tamano_recambio_generacional": 10,
+        }
+    )
 
-    print(generar_solucion_aleatoria(dimension))
-    print(generar_solucion_aleatoria(dimension))
+    solucionador.ejecutar()
+
+    print(solucionador.get_poblacion())
+
+    print(sorted(solucionador.get_poblacion(), key=cromosoma.get_fitness, reverse=True))
+
+
+    #print(solucionador._seleccionar_pareja_por_torneo())
 
 
 if __name__ == "__main__":
