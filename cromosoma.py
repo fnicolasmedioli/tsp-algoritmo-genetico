@@ -1,20 +1,67 @@
+import random
+
+
 class Cromosoma:
 
-    genes = None
-    fitness = None
+    _genes = None
+    _costo = None
+    _fitness = None
 
-    def __init__(self, genes, fitness):
-        self.genes = genes
-        self.fitness = fitness
+    def __init__(self, genes, costo):
+        self._genes = genes
+        self._costo = costo
+        self._fitness = self._calc_fitness(costo)
+
+    def _get_genes_str(self):
+        s = str(self._genes[0])
+        for i in range(1, len(self._genes)):
+            s += ", " + str(self._genes[i])
+        s += ", " + str(self._genes[0])
+        return s
 
     def __repr__(self):
-        return "Genes: " + str(self.genes) + "  Fitness: " + str(self.fitness)
+        return "Fitness: " + str(self._fitness) + " Genes: " + self._get_genes_str() + " Costo: " + str(self._costo)
 
     def get_genes(self):
-        return self.genes
+        return self._genes
 
     def get_fitness(self):
-        return self.fitness
+        return self._fitness
+
+    def get_costo(self):
+        return self._costo
+
+    def mutar_genes(self):
+
+        tamano_inicial = len(self._genes)
+
+        indice_gen = random.randint(0, len(self._genes) - 1)
+        indice_gen_intercambio = None
+
+        while True:
+            indice_gen_intercambio = random.randint(0, len(self._genes) - 1)
+            if indice_gen_intercambio != indice_gen:
+                break
+
+        if indice_gen > indice_gen_intercambio:
+            indice_gen, indice_gen_intercambio = indice_gen_intercambio, indice_gen
+
+        temp = self._genes[indice_gen]
+        self._genes[indice_gen] = self._genes[indice_gen_intercambio]
+        self._genes[indice_gen_intercambio] = temp
+
+        if len(self._genes) < tamano_inicial:
+            raise Exception("Se perdieron genes en la mutacion")
+
+        self._fitness = None
+
+    def set_costo(self, costo):
+        self._costo = costo
+        self._fitness = self._calc_fitness(costo)
+
+    def _calc_fitness(self, costo):
+        self._fitness = 100000 / costo
+        return self._fitness
 
 
 # Se usa esta funcion para ordenar la lista de cromosomas por fitness

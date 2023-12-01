@@ -1,24 +1,75 @@
+import math
 import random
+import json
 
+from archivo_atsp import ArchivoATSP
 from cromosoma import Cromosoma
+
+NOMBRE_ARCHIVO_LOG = "log.txt"
+
+
+def chequear_config(config):
+    assert config["hijos_generados_por_iteracion"] >= config["tamano_recambio_generacional"], \
+        "El tamano del recambio generacional no puede ser mayor al numero de hijos generados por generacion"
 
 
 class SolucionadorATSP:
-    _archivo = None
-    _config = None
-    _poblacion = None
+    _archivo: ArchivoATSP = None
+    _config: dict = None
+    _poblacion: list[Cromosoma] = None
     _matriz = None
+    _mejor_cromosoma: Cromosoma = None
+    _historial_mejores = []
+    _ejecutando = False
 
-    def __init__(self, archivo, config):
+    def __init__(self, archivo: ArchivoATSP, config: dict):
+
         self._archivo = archivo
         self._config = config
         self._matriz = archivo.get_matriz()
 
+        chequear_config(config)
+
+        self._guardar_configuracion()
+
+    def _guardar_configuracion(self):
+
+        with open(NOMBRE_ARCHIVO_LOG, "w") as archivo:
+            archivo.write("Configuracion: \n")
+            json.dump(self._config, archivo, indent=4)
+            archivo.write("\n")
+
+    def _log(self, mensaje):
+
+        with open(NOMBRE_ARCHIVO_LOG, "a") as archivo:
+            archivo.write(mensaje + "\n")
+
     def ejecutar(self):
+        try:
+            self._ejecucion_bloqueante()
+        except KeyboardInterrupt:
+            print("Se interrumpio la ejecucion del programa")
+
+    def _ejecucion_bloqueante(self):
 
         self._generar_poblacion_inicial()
 
+        # Encontrar mejor cromosoma de la poblacion inicial
+
+        for cromosoma in self._poblacion:
+            if self._mejor_cromosoma is None or self._mejor_cromosoma.get_fitness() < cromosoma.get_fitness():
+                self._mejor_cromosoma = cromosoma
+
+        self._historial_mejores.append({
+            "cromosoma": self._mejor_cromosoma,
+            "generacion": 0
+        })
+
+        self._log("Mejor cromosoma inicial: " + str(self._mejor_cromosoma))
+
         generacion = 0
+
+        self._ejecutando = True
 
         while True:
 
@@ -28,11 +79,48 @@ class SolucionadorATSP:
 
             lista_hijos = []
 
-            for hijo in self._config["tamano_recambio_generacional"]:
-                padre_1, padre_2 = self._seleccionar_pareja_por_torneo()
+            for hijo in range(math.floor(self._config["hijos_generados_por_iteracion"] / 2)):
+                pareja = self._seleccionar_pareja_por_torneo()
 
-            if generacion == 100:
-                break
+                hijos = self._cruzar_pareja(pareja)
+
+                if len(hijos[0].get_genes()) != self._archivo.get_dimension():
+                    raise Exception(
+                        "Se perdieron/ganaron: " + str(abs(self._archivo.get_dimension() - len(hijos[0].get_genes()))) +
+                        " genes en el cruce")
+
+                lista_hijos.append(hijos[0])
+                lista_hijos.append(hijos[1])
+
+            # Generar mutaciones
+
+            for hijo in lista_hijos:
+
+                if random.random() < self._config["probabilidad_mutacion"]:
+
+                    hijo.mutar_genes()
+                    hijo.set_costo(self._calcular_costo(hijo.get_genes()))
+
+            # Recambio generacional
+
+            self._poblacion = sorted(self._poblacion, key=Cromosoma.get_fitness, reverse=True)
+            lista_hijos = sorted(lista_hijos, key=Cromosoma.get_fitness, reverse=True)
+
+            self._poblacion = self._poblacion[:len(self._poblacion) - self._config["tamano_recambio_generacional"]] + \
+                              lista_hijos[:self._config["tamano_recambio_generacional"]]
+
+            # Chequear y actualizar el mejor cromosoma encontrado
+
+            if self._mejor_cromosoma is None or self._mejor_cromosoma.get_fitness() < self._poblacion[0].get_fitness():
+                self._mejor_cromosoma = self._poblacion[0]
+
+                self._log("Generacion '" + str(generacion) + "' se encuentra una mejor solucion: " + str(
+                    self._mejor_cromosoma))
+
+                self._historial_mejores.append({
+                    "cromosoma": self._mejor_cromosoma,
+                    "generacion": generacion
+                })
 
     def _generar_poblacion_inicial(self):
 
@@ -42,14 +130,16 @@ class SolucionadorATSP:
             cromosoma = self._generar_cromosoma_aleatorio()
             self._poblacion.append(cromosoma)
 
-    def _calcular_fitness(self, cromosoma):
+    def _calcular_costo(self, genes):
 
-        fitness = 0
+        costo = 0
 
-        for i in range(len(cromosoma) - 1):
-            fitness += self._matriz[cromosoma[i]][cromosoma[i + 1]]
+        for i in range(len(genes) - 1):
+            costo += self._matriz[genes[i]][genes[i + 1]]
 
-        return 10000 / fitness
+        costo += self._matriz[genes[len(genes) - 1]][genes[0]]  # Agregar costo para cerrar el ciclo
+
+        return costo
 
     def _generar_cromosoma_aleatorio(self):
 
@@ -70,11 +160,11 @@ class SolucionadorATSP:
 
             ciudades_restantes.pop()
 
-        genes.append(genes[0])
+        # genes.append(genes[0])
 
-        fitness = self._calcular_fitness(genes)
+        costo = self._calcular_costo(genes)
 
-        return Cromosoma(genes, fitness)
+        return Cromosoma(genes, costo)
 
     def _seleccionar_pareja_por_torneo(self):
 
@@ -105,7 +195,52 @@ class SolucionadorATSP:
 
     def _cruzar_pareja(self, pareja):
 
-        pass
+        def cruzar_por_rango(genes_padre_1, genes_padre_2, rango):
+
+            copia_genes_padre_2 = genes_padre_2.copy()
+            genes_hijo = []
+
+            ciudades_en_rango = genes_padre_1[rango["inicio"]: rango["fin"]]
+
+            for i in range(len(copia_genes_padre_2) - 1, -1, -1):
+                if copia_genes_padre_2[i] in ciudades_en_rango:
+                    del copia_genes_padre_2[i]
+
+            genes_hijo += copia_genes_padre_2[:rango["inicio"]]
+            genes_hijo += genes_padre_1[rango["inicio"]: rango["fin"]]
+            genes_hijo += copia_genes_padre_2[rango["inicio"]:]
+
+            return genes_hijo
+
+        genes_padre_1 = pareja[0].get_genes()
+        genes_padre_2 = pareja[1].get_genes()
+
+        inicio_rango = random.randint(0, self._archivo.get_dimension() - 1)
+        fin_rango = random.randint(0, self._archivo.get_dimension() - 1)
+
+        if fin_rango < inicio_rango:
+            inicio_rango, fin_rango = fin_rango, inicio_rango
+
+        rango = {"inicio": inicio_rango, "fin": fin_rango}
+
+        # cls
+        # rango)
+
+        genes_hijo_1 = cruzar_por_rango(genes_padre_1, genes_padre_2, rango)
+        genes_hijo_2 = cruzar_por_rango(genes_padre_2, genes_padre_1, rango)
+        costo_hijo_1 = self._calcular_costo(genes_hijo_1)
+        costo_hijo_2 = self._calcular_costo(genes_hijo_2)
+
+        return Cromosoma(genes_hijo_1, costo_hijo_1), Cromosoma(genes_hijo_2, costo_hijo_2)
 
     def get_poblacion(self):
         return self._poblacion
+
+    def get_mejor_cromosoma(self):
+        return self._mejor_cromosoma
+
+    def get_historial_mejores(self):
+        return self._historial_mejores
+
+    def esta_ejecutando(self):
+        return self._ejecutando
