@@ -1,0 +1,9 @@
+.config-form {
+    padding: 1em;
+}
+
+.config-form * {
+    display: flex;
+    flex-direction: column;
+    margin: 0.5em;
+}

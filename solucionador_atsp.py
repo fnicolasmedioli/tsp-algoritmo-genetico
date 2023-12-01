@@ -20,7 +20,6 @@ class SolucionadorATSP:
     _matriz = None
     _mejor_cromosoma: Cromosoma = None
     _historial_mejores = []
-    _ejecutando = False
 
     def __init__(self, archivo: ArchivoATSP, config: dict):
 
@@ -44,15 +43,12 @@ class SolucionadorATSP:
         with open(NOMBRE_ARCHIVO_LOG, "a") as archivo:
             archivo.write(mensaje + "\n")
 
-    def ejecutar(self):
-        try:
-            self._ejecucion_bloqueante()
-        except KeyboardInterrupt:
-            print("Se interrumpio la ejecucion del programa")
+    def ejecutar(self, control_ejecucion):
 
-    def _ejecucion_bloqueante(self):
+        print("Inicia la ejecucion")
 
         self._generar_poblacion_inicial()
+
 
         # Encontrar mejor cromosoma de la poblacion inicial
 
@@ -69,9 +65,7 @@ class SolucionadorATSP:
 
         generacion = 0
 
-        self._ejecutando = True
-
-        while True:
+        while control_ejecucion["ejecutar"]:
 
             generacion += 1
 
@@ -121,6 +115,8 @@ class SolucionadorATSP:
                     "cromosoma": self._mejor_cromosoma,
                     "generacion": generacion
                 })
+
+        print("Finaliza la ejecucion")
 
     def _generar_poblacion_inicial(self):
 
@@ -241,6 +237,3 @@ class SolucionadorATSP:
 
     def get_historial_mejores(self):
         return self._historial_mejores
-
-    def esta_ejecutando(self):
-        return self._ejecutando
