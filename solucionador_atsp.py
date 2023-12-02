@@ -5,6 +5,8 @@ import json
 from archivo_atsp import ArchivoATSP
 from cromosoma import Cromosoma
 
+import datetime
+
 def chequear_config(config):
     assert config["hijos_generados_por_iteracion"] >= config["tamano_recambio_generacional"], \
         "El tamano del recambio generacional no puede ser mayor al numero de hijos generados por generacion"
@@ -12,7 +14,7 @@ def chequear_config(config):
 
 class SolucionadorATSP:
 
-    def __init__(self, archivo: ArchivoATSP, config: dict):
+    def __init__(self, archivo: ArchivoATSP, config: dict, timestamp_inicio):
 
         self._archivo = archivo
         self._config = config
@@ -22,6 +24,7 @@ class SolucionadorATSP:
         self._historial_mejores = []
         self._poblacion = None
         self._generacion_actual = 0
+        self._timestamp_inicio = timestamp_inicio
         
         if config["metodo_seleccion_padres"] == "ruleta":
             self.seleccionar_pareja = seleccionar_pareja_por_ruleta
@@ -49,7 +52,8 @@ class SolucionadorATSP:
 
         self._historial_mejores.append({
             "cromosoma": self._mejor_cromosoma,
-            "generacion": 0
+            "generacion": 0,
+            "segundos": (datetime.datetime.now() - self._timestamp_inicio).total_seconds()
         })
 
         while control_ejecucion["ejecutar"]:
@@ -65,8 +69,8 @@ class SolucionadorATSP:
 
                 hijos = self.cruzar_pareja(pareja, self._matriz)
 
-                if not chequear_validez(hijos[0]) or not chequear_validez(hijos[1]):
-                    print("SE GENERARON HIJOS INVALIDOS")
+                #if not chequear_validez(hijos[0]) or not chequear_validez(hijos[1]):
+                #    print("SE GENERARON HIJOS INVALIDOS")
 
                 if len(hijos[0].get_genes()) != self._archivo.get_dimension():
                     raise Exception(
@@ -104,7 +108,8 @@ class SolucionadorATSP:
 
                 self._historial_mejores.append({
                     "cromosoma": self._mejor_cromosoma,
-                    "generacion": self._generacion_actual
+                    "generacion": self._generacion_actual,
+                    "segundos": (datetime.datetime.now() - self._timestamp_inicio).total_seconds()
                 })
 
         print("Finaliza la ejecucion")
@@ -163,7 +168,8 @@ class SolucionadorATSP:
         for mejora in self._historial_mejores:
             lista.append({
                 "cromosoma": mejora["cromosoma"].to_json(),
-                "generacion": mejora["generacion"]
+                "generacion": mejora["generacion"],
+                "segundos": mejora["segundos"]
             })
         return lista
 

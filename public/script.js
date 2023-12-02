@@ -171,8 +171,8 @@ function mostrarDatos(datos)
     if (datos["historial_mejores"])
     {
         elementoDatos.innerHTML += "Historial de mejoras:\n\n";
-        for ({ cromosoma, generacion } of datos["historial_mejores"])
-            elementoDatos.innerHTML += `Generación ${generacion} encuentra una mejora, nuevo costo: ${cromosoma.costo} | ` + cromosomaToString(cromosoma) + "\n";
+        for ({ cromosoma, generacion, segundos } of datos["historial_mejores"])
+            elementoDatos.innerHTML += `Generación ${generacion} encuentra una mejora, nuevo costo: ${cromosoma.costo} | ` + cromosomaToString(cromosoma) + ` luego de ${segundos} segundos\n`;
     }    
     
 }

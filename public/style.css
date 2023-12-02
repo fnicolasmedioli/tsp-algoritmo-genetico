@@ -18,13 +18,22 @@
     display: flex;
     flex-direction: row;
     outline: 2px solid grey;
-    height: 500px;
+    height: min-content;
     cursor: default;
 }
 
 .seccion-2 *, .seccion-3 * {
     width: 50%;
     height: 100%;
-    resize: vertical;
+    resize: both;
     cursor: default;
+    height: 500px;
+}
+
+h1 {
+    margin: 10px;
+}
+
+textarea {
+    padding: 5px;
 }

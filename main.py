@@ -58,7 +58,8 @@ def handle_iniciar():
 
     solucionador = SolucionadorATSP(
         archivo,
-        config
+        config,
+        timestamp_inicio
     )
 
     control_ejecucion["ejecutar"] = True
@@ -102,6 +103,9 @@ def handle_parar():
     plt.figure()
     plt.xscale("log")
     plt.plot(eje_x, eje_y, label="Mejor solucion encontrada por generacion")
+    # plt.legend()
+    plt.xlabel("Generacion")
+    plt.ylabel("Costo")
     plt.savefig("./public/temp.png")
     plt.clf()
 
