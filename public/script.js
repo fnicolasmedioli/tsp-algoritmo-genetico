@@ -11,6 +11,7 @@ function leerConfig()
     config.probabilidad_mutacion = Number(document.querySelector("#probabilidad_mutacion").value);
     config.nombre_archivo = document.querySelector("#select_nombre_archivo").value;
     config.metodo_seleccion_padres = document.querySelector("#select_padres").value;
+    config.metodo_cruzamiento = document.querySelector("#select_cruzamiento").value;
 
     console.log("Configuracion leida:");
     console.log(config);

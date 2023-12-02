@@ -20,9 +20,12 @@ class Cromosoma:
         return s
 
     def to_json(self):
+        g = self._genes.copy()
+        if len(g) > 0:
+            g.append(g[0])
         return {
             "fitness": self._fitness,
-            "genes": self._genes,
+            "genes": g,
             "costo": self._costo
         }
 
@@ -37,6 +40,9 @@ class Cromosoma:
 
     def get_costo(self):
         return self._costo
+    
+    def get_length(self):
+        return len(self._genes)
 
     def mutar_genes(self):
 

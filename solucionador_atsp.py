@@ -28,6 +28,13 @@ class SolucionadorATSP:
         else:
             self.seleccionar_pareja = seleccionar_pareja_por_torneo
 
+        if config["metodo_cruzamiento"] == "order_crossover":
+            self.cruzar_pareja = cruzar_pareja_por_order_crossover
+        else:
+            self.cruzar_pareja = cruzar_pareja_por_position_based_crossover
+
+
+
     def ejecutar(self, control_ejecucion):
 
         print("Inicia la ejecucion")
@@ -56,7 +63,10 @@ class SolucionadorATSP:
             for hijo in range(math.floor(self._config["hijos_generados_por_iteracion"] / 2)):
                 pareja = self.seleccionar_pareja(self._poblacion)
 
-                hijos = self._cruzar_pareja(pareja)
+                hijos = self.cruzar_pareja(pareja, self._matriz)
+
+                if not chequear_validez(hijos[0]) or not chequear_validez(hijos[1]):
+                    print("SE GENERARON HIJOS INVALIDOS")
 
                 if len(hijos[0].get_genes()) != self._archivo.get_dimension():
                     raise Exception(
@@ -95,6 +105,7 @@ class SolucionadorATSP:
 
         print("Finaliza la ejecucion")
 
+
     def _generar_poblacion_inicial(self):
 
         self._poblacion = []
@@ -105,14 +116,7 @@ class SolucionadorATSP:
 
     def _calcular_costo(self, genes):
 
-        costo = 0
-
-        for i in range(len(genes) - 1):
-            costo += self._matriz[genes[i]][genes[i + 1]]
-
-        costo += self._matriz[genes[len(genes) - 1]][genes[0]]  # Agregar costo para cerrar el ciclo
-
-        return costo
+        return calcular_costo_cromosoma(genes, self._matriz)
 
     def _generar_cromosoma_aleatorio(self):
 
@@ -133,51 +137,15 @@ class SolucionadorATSP:
 
             ciudades_restantes.pop()
 
-        # genes.append(genes[0])
-
         costo = self._calcular_costo(genes)
 
         return Cromosoma(genes, costo)
 
-
-    def _cruzar_pareja(self, pareja):
-
-        def cruzar_por_rango(genes_padre_1, genes_padre_2, rango):
-
-            copia_genes_padre_2 = genes_padre_2.copy()
-            genes_hijo = []
-
-            ciudades_en_rango = genes_padre_1[rango["inicio"]: rango["fin"]]
-
-            for i in range(len(copia_genes_padre_2) - 1, -1, -1):
-                if copia_genes_padre_2[i] in ciudades_en_rango:
-                    del copia_genes_padre_2[i]
-
-            genes_hijo += copia_genes_padre_2[:rango["inicio"]]
-            genes_hijo += genes_padre_1[rango["inicio"]: rango["fin"]]
-            genes_hijo += copia_genes_padre_2[rango["inicio"]:]
-
-            return genes_hijo
-
-        genes_padre_1 = pareja[0].get_genes()
-        genes_padre_2 = pareja[1].get_genes()
-
-        inicio_rango = random.randint(0, self._archivo.get_dimension() - 1)
-        fin_rango = random.randint(0, self._archivo.get_dimension() - 1)
-
-        if fin_rango < inicio_rango:
-            inicio_rango, fin_rango = fin_rango, inicio_rango
-
-        rango = {"inicio": inicio_rango, "fin": fin_rango}
-
-        genes_hijo_1 = cruzar_por_rango(genes_padre_1, genes_padre_2, rango)
-        genes_hijo_2 = cruzar_por_rango(genes_padre_2, genes_padre_1, rango)
-        costo_hijo_1 = self._calcular_costo(genes_hijo_1)
-        costo_hijo_2 = self._calcular_costo(genes_hijo_2)
-
-        return Cromosoma(genes_hijo_1, costo_hijo_1), Cromosoma(genes_hijo_2, costo_hijo_2)
-
     def get_poblacion(self):
+
+        if self._poblacion is None:
+            return None
+
         lista = []
         for cromosoma in self._poblacion:
             lista.append(cromosoma.to_json())
@@ -268,3 +236,112 @@ def seleccionar_pareja_por_ruleta(poblacion):
                 break
 
         return padre1, padre2
+
+
+def cruzar_pareja_por_order_crossover(pareja, matriz):
+
+    dimension = pareja[0].get_length()
+
+    def cruzar_por_rango(genes_padre_1, genes_padre_2, rango):
+
+        copia_genes_padre_2 = genes_padre_2.copy()
+        genes_hijo = []
+
+        ciudades_en_rango = genes_padre_1[rango["inicio"]: rango["fin"]]
+
+        for i in range(len(copia_genes_padre_2) - 1, -1, -1):
+            if copia_genes_padre_2[i] in ciudades_en_rango:
+                del copia_genes_padre_2[i]
+
+        genes_hijo += copia_genes_padre_2[:rango["inicio"]]
+        genes_hijo += genes_padre_1[rango["inicio"]: rango["fin"]]
+        genes_hijo += copia_genes_padre_2[rango["inicio"]:]
+
+        return genes_hijo
+
+    genes_padre_1 = pareja[0].get_genes()
+    genes_padre_2 = pareja[1].get_genes()
+
+    inicio_rango = random.randint(0, dimension - 1)
+    fin_rango = random.randint(0, dimension - 1)
+
+    if fin_rango < inicio_rango:
+        inicio_rango, fin_rango = fin_rango, inicio_rango
+
+    rango = {"inicio": inicio_rango, "fin": fin_rango}
+
+    genes_hijo_1 = cruzar_por_rango(genes_padre_1, genes_padre_2, rango)
+    genes_hijo_2 = cruzar_por_rango(genes_padre_2, genes_padre_1, rango)
+
+    costo_hijo_1 = calcular_costo_cromosoma(genes_hijo_1, matriz)
+    costo_hijo_2 = calcular_costo_cromosoma(genes_hijo_2, matriz)
+
+    return Cromosoma(genes_hijo_1, costo_hijo_1), Cromosoma(genes_hijo_2, costo_hijo_2)
+
+
+
+def cruzar_pareja_por_position_based_crossover(pareja, matriz):
+
+    dimension = pareja[0].get_length()
+
+    def cruzar_aleatoriamente(genes_padre_1, genes_padre_2, seleccionados):
+
+        copia_genes_padre_2 = genes_padre_2.copy()
+        genes_hijo = []
+
+        ciudades_seleccionadas = []
+        for i in seleccionados:
+            ciudades_seleccionadas.append(genes_padre_1[i])
+
+        for i in range(len(copia_genes_padre_2) - 1, -1, -1):
+            if copia_genes_padre_2[i] in ciudades_seleccionadas:
+                del copia_genes_padre_2[i]
+
+        for i in range(dimension):
+            if i in seleccionados:
+                genes_hijo.append(genes_padre_1[i])
+            else:
+                genes_hijo.append(copia_genes_padre_2.pop(0))
+
+        return genes_hijo
+
+    seleccionados = []
+
+    for _ in range(random.randint(1, dimension - 1)):
+
+        indice = random.randint(0, dimension - 1)
+
+        if not indice in seleccionados:
+            seleccionados.append(indice)
+
+    genes_padre_1 = pareja[0].get_genes()
+    genes_padre_2 = pareja[1].get_genes()
+
+    genes_hijo_1 = cruzar_aleatoriamente(genes_padre_1, genes_padre_2, seleccionados)
+    genes_hijo_2 = cruzar_aleatoriamente(genes_padre_2, genes_padre_1, seleccionados)
+
+    costo_hijo_1 = calcular_costo_cromosoma(genes_hijo_1, matriz)
+    costo_hijo_2 = calcular_costo_cromosoma(genes_hijo_2, matriz)
+
+    return Cromosoma(genes_hijo_1, costo_hijo_1), Cromosoma(genes_hijo_2, costo_hijo_2)
+
+
+def calcular_costo_cromosoma(genes, matriz):
+
+    costo = 0
+
+    for i in range(len(genes) - 1):
+        costo += matriz[genes[i]][genes[i + 1]]
+
+    costo += matriz[genes[len(genes) - 1]][genes[0]]  # Agregar costo para cerrar el ciclo
+
+    return costo
+
+
+def chequear_validez(cromosoma):
+    genes = cromosoma.get_genes()
+    for i in range(len(genes)):
+        for j in range(i + 1, len(genes)):
+            if genes[i] == genes[j]:
+                return False
+    return True
