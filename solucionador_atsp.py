@@ -22,6 +22,11 @@ class SolucionadorATSP:
         self._historial_mejores = []
         self._poblacion = None
         self._generacion_actual = 0
+        
+        if config["metodo_seleccion_padres"] == "ruleta":
+            self.seleccionar_pareja = seleccionar_pareja_por_ruleta
+        else:
+            self.seleccionar_pareja = seleccionar_pareja_por_torneo
 
     def ejecutar(self, control_ejecucion):
 
@@ -49,7 +54,7 @@ class SolucionadorATSP:
             lista_hijos = []
 
             for hijo in range(math.floor(self._config["hijos_generados_por_iteracion"] / 2)):
-                pareja = self._seleccionar_pareja_por_torneo()
+                pareja = self.seleccionar_pareja(self._poblacion)
 
                 hijos = self._cruzar_pareja(pareja)
 
@@ -134,32 +139,6 @@ class SolucionadorATSP:
 
         return Cromosoma(genes, costo)
 
-    def _seleccionar_pareja_por_torneo(self):
-
-        def seleccionar_padre_aletoriamente():
-
-            indice_aleatorio_1 = random.randint(0, len(self._poblacion) - 1)
-            indice_aleatorio_2 = None
-
-            while True:
-                indice_aleatorio_2 = random.randint(0, len(self._poblacion) - 1)
-                if indice_aleatorio_2 != indice_aleatorio_1:
-                    break
-
-            if self._poblacion[indice_aleatorio_1].get_fitness() > self._poblacion[indice_aleatorio_2].get_fitness():
-                return self._poblacion[indice_aleatorio_1]
-            else:
-                return self._poblacion[indice_aleatorio_2]
-
-        padre_1 = seleccionar_padre_aletoriamente()
-        padre_2 = None
-
-        while True:
-            padre_2 = seleccionar_padre_aletoriamente()
-            if padre_2 != padre_1:
-                break
-
-        return padre_1, padre_2
 
     def _cruzar_pareja(self, pareja):
 
@@ -223,3 +202,69 @@ class SolucionadorATSP:
 
     def get_generacion_actual(self):
         return self._generacion_actual
+
+
+
+
+def seleccionar_pareja_por_torneo(poblacion):
+
+    def seleccionar_padre_aletoriamente():
+
+        indice_aleatorio_1 = random.randint(0, len(poblacion) - 1)
+        indice_aleatorio_2 = None
+
+        while True:
+            indice_aleatorio_2 = random.randint(0, len(poblacion) - 1)
+            if indice_aleatorio_2 != indice_aleatorio_1:
+                break
+
+        if poblacion[indice_aleatorio_1].get_fitness() > poblacion[indice_aleatorio_2].get_fitness():
+            return poblacion[indice_aleatorio_1]
+        else:
+            return poblacion[indice_aleatorio_2]
+
+    padre_1 = seleccionar_padre_aletoriamente()
+    padre_2 = None
+
+    while True:
+        padre_2 = seleccionar_padre_aletoriamente()
+        if padre_2 != padre_1:
+            break
+
+    return padre_1, padre_2
+
+
+def seleccionar_pareja_por_ruleta(poblacion):
+        
+        def calcular_suma_fitness(poblacion):
+            suma = 0
+            for cromosoma in poblacion:
+                suma += cromosoma.get_fitness()
+            return suma
+
+        def calcular_probabilidad(cromosoma, suma_fitness):
+            return cromosoma.get_fitness() / suma_fitness
+
+        suma_fitness = calcular_suma_fitness(poblacion)
+        
+        acumulador = 0
+
+        rand_padre_1 = random.random()
+        rand_padre_2 = random.random()
+
+        padre1 = None
+        padre2 = None
+
+        for cromosoma in poblacion:
+            acumulador += calcular_probabilidad(cromosoma, suma_fitness)
+            
+            if padre1 is None and rand_padre_1 <= acumulador:
+                padre1 = cromosoma
+
+            if padre2 is None and rand_padre_2 <= acumulador:
+                padre2 = cromosoma
+
+            if padre1 and padre2:
+                break
+
+        return padre1, padre2

@@ -67,7 +67,7 @@ class Cromosoma:
         self._fitness = self._calc_fitness(costo)
 
     def _calc_fitness(self, costo):
-        self._fitness = 100000 / costo
+        self._fitness = 1 / costo
         return self._fitness
 
 

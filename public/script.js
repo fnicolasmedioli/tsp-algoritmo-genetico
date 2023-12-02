@@ -10,6 +10,7 @@ function leerConfig()
     config.tamano_recambio_generacional = Number(document.querySelector("#tamano_recambio_generacional").value);
     config.probabilidad_mutacion = Number(document.querySelector("#probabilidad_mutacion").value);
     config.nombre_archivo = document.querySelector("#select_nombre_archivo").value;
+    config.metodo_seleccion_padres = document.querySelector("#select_padres").value;
 
     console.log("Configuracion leida:");
     console.log(config);
