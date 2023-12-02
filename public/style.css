@@ -14,15 +14,17 @@
     outline: 2px solid grey;
 }
 
-.seccion-2 {
+.seccion-2, .seccion-3 {
     display: flex;
     flex-direction: row;
     outline: 2px solid grey;
     height: 500px;
+    cursor: default;
 }
 
-.seccion-2 * {
+.seccion-2 *, .seccion-3 * {
     width: 50%;
     height: 100%;
     resize: vertical;
+    cursor: default;
 }

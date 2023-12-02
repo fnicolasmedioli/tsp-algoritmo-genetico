@@ -88,7 +88,8 @@ def handle_parar():
         "historial_mejores": historial_mejores,
         "ruta_grafico": "temp.png",
         "poblacion": solucionador.get_poblacion(),
-        "segundos_ejecucion": (datetime.datetime.now() - timestamp_inicio).total_seconds()
+        "segundos_ejecucion": (datetime.datetime.now() - timestamp_inicio).total_seconds(),
+        "config": config
     }
 
     solucionador = None

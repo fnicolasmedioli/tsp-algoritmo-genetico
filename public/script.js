@@ -1,4 +1,5 @@
 const botonIniciarParar = document.querySelector("#boton-iniciar-parar");
+const datosFinalizacion = document.querySelector("#datos-finalizacion");
 
 let ejecutando = false;
 
@@ -13,9 +14,6 @@ function leerConfig()
     config.metodo_seleccion_padres = document.querySelector("#select_padres").value;
     config.metodo_cruzamiento = document.querySelector("#select_cruzamiento").value;
     config.metodo_mutacion = document.querySelector("#select_mutacion").value;
-
-    console.log("Configuracion leida:");
-    console.log(config);
 
     return config;
 }
@@ -35,6 +33,16 @@ document.querySelector("#boton-iniciar-parar").addEventListener("click", () => {
             console.log(responseJson);
             if (responseJson.ruta_grafico)
                 cargarGrafico(responseJson.ruta_grafico);
+
+            if (responseJson["config"])
+            {
+                datosFinalizacion.innerHTML = "Configuracion utilizada:\n";
+                datosFinalizacion.innerHTML += JSON.stringify(responseJson["config"], null, 4) + "\n\n";
+            }
+            if (responseJson["segundos_ejecucion"])
+            {
+                datosFinalizacion.innerHTML += "Tiempo de procesamiento: " + responseJson["segundos_ejecucion"] + " segundos\n";
+            }
         })
         .catch(console.log);
     }
@@ -133,10 +141,7 @@ function cromosomaToString(cromosoma)
 function mostrarDatos(datos)
 {
     if (datos == null)
-    {
-        elementoDatos.innerHTML = "Error en conexion al servidor";
         return;
-    }
 
     if (datos["poblacion"])
     {
