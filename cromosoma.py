@@ -19,6 +19,13 @@ class Cromosoma:
         s += ", " + str(self._genes[0])
         return s
 
+    def to_json(self):
+        return {
+            "fitness": self._fitness,
+            "genes": self._genes,
+            "costo": self._costo
+        }
+
     def __repr__(self):
         return "Fitness: " + str(self._fitness) + " Genes: " + self._get_genes_str() + " Costo: " + str(self._costo)
 

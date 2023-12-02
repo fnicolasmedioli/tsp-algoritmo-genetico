@@ -5,50 +5,29 @@ import json
 from archivo_atsp import ArchivoATSP
 from cromosoma import Cromosoma
 
-NOMBRE_ARCHIVO_LOG = "log.txt"
-
-
 def chequear_config(config):
     assert config["hijos_generados_por_iteracion"] >= config["tamano_recambio_generacional"], \
         "El tamano del recambio generacional no puede ser mayor al numero de hijos generados por generacion"
 
 
 class SolucionadorATSP:
-    _archivo: ArchivoATSP = None
-    _config: dict = None
-    _poblacion: list[Cromosoma] = None
-    _matriz = None
-    _mejor_cromosoma: Cromosoma = None
-    _historial_mejores = []
 
     def __init__(self, archivo: ArchivoATSP, config: dict):
 
         self._archivo = archivo
         self._config = config
         self._matriz = archivo.get_matriz()
-
         chequear_config(config)
-
-        self._guardar_configuracion()
-
-    def _guardar_configuracion(self):
-
-        with open(NOMBRE_ARCHIVO_LOG, "w") as archivo:
-            archivo.write("Configuracion: \n")
-            json.dump(self._config, archivo, indent=4)
-            archivo.write("\n")
-
-    def _log(self, mensaje):
-
-        with open(NOMBRE_ARCHIVO_LOG, "a") as archivo:
-            archivo.write(mensaje + "\n")
+        self._mejor_cromosoma = None
+        self._historial_mejores = []
+        self._poblacion = None
+        self._generacion_actual = 0
 
     def ejecutar(self, control_ejecucion):
 
         print("Inicia la ejecucion")
 
         self._generar_poblacion_inicial()
-
 
         # Encontrar mejor cromosoma de la poblacion inicial
 
@@ -61,13 +40,9 @@ class SolucionadorATSP:
             "generacion": 0
         })
 
-        self._log("Mejor cromosoma inicial: " + str(self._mejor_cromosoma))
-
-        generacion = 0
-
         while control_ejecucion["ejecutar"]:
 
-            generacion += 1
+            self._generacion_actual += 1
 
             self._poblacion = sorted(self._poblacion, key=Cromosoma.get_fitness, reverse=True)
 
@@ -108,12 +83,9 @@ class SolucionadorATSP:
             if self._mejor_cromosoma is None or self._mejor_cromosoma.get_fitness() < self._poblacion[0].get_fitness():
                 self._mejor_cromosoma = self._poblacion[0]
 
-                self._log("Generacion '" + str(generacion) + "' se encuentra una mejor solucion: " + str(
-                    self._mejor_cromosoma))
-
                 self._historial_mejores.append({
                     "cromosoma": self._mejor_cromosoma,
-                    "generacion": generacion
+                    "generacion": self._generacion_actual
                 })
 
         print("Finaliza la ejecucion")
@@ -219,9 +191,6 @@ class SolucionadorATSP:
 
         rango = {"inicio": inicio_rango, "fin": fin_rango}
 
-        # cls
-        # rango)
-
         genes_hijo_1 = cruzar_por_rango(genes_padre_1, genes_padre_2, rango)
         genes_hijo_2 = cruzar_por_rango(genes_padre_2, genes_padre_1, rango)
         costo_hijo_1 = self._calcular_costo(genes_hijo_1)
@@ -230,10 +199,27 @@ class SolucionadorATSP:
         return Cromosoma(genes_hijo_1, costo_hijo_1), Cromosoma(genes_hijo_2, costo_hijo_2)
 
     def get_poblacion(self):
-        return self._poblacion
+        lista = []
+        for cromosoma in self._poblacion:
+            lista.append(cromosoma.to_json())
+        return lista
 
     def get_mejor_cromosoma(self):
         return self._mejor_cromosoma
 
     def get_historial_mejores(self):
-        return self._historial_mejores
+        lista = []
+        for mejora in self._historial_mejores:
+            lista.append({
+                "cromosoma": mejora["cromosoma"].to_json(),
+                "generacion": mejora["generacion"]
+            })
+        return lista
+
+    def get_mejor_cromosoma_json(self):
+        if self._mejor_cromosoma is None:
+            return None
+        return self._mejor_cromosoma.to_json()
+
+    def get_generacion_actual(self):
+        return self._generacion_actual
