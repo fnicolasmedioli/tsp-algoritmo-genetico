@@ -82,7 +82,11 @@ class SolucionadorATSP:
 
                 if random.random() < self._config["probabilidad_mutacion"]:
 
-                    hijo.mutar_genes()
+                    if self._config["metodo_mutacion"] == "intercambio":
+                        hijo.mutar_por_intercambio()
+                    else:
+                        hijo.mutar_por_inversion()
+
                     hijo.set_costo(self._calcular_costo(hijo.get_genes()))
 
             # Recambio generacional

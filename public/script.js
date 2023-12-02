@@ -12,6 +12,7 @@ function leerConfig()
     config.nombre_archivo = document.querySelector("#select_nombre_archivo").value;
     config.metodo_seleccion_padres = document.querySelector("#select_padres").value;
     config.metodo_cruzamiento = document.querySelector("#select_cruzamiento").value;
+    config.metodo_mutacion = document.querySelector("#select_mutacion").value;
 
     console.log("Configuracion leida:");
     console.log(config);

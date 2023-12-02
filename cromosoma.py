@@ -1,5 +1,5 @@
 import random
-
+import math
 
 class Cromosoma:
 
@@ -44,7 +44,7 @@ class Cromosoma:
     def get_length(self):
         return len(self._genes)
 
-    def mutar_genes(self):
+    def mutar_por_intercambio(self):
 
         tamano_inicial = len(self._genes)
 
@@ -67,6 +67,28 @@ class Cromosoma:
             raise Exception("Se perdieron genes en la mutacion")
 
         self._fitness = None
+
+
+    def mutar_por_inversion(self):
+
+        a = random.randint(0, len(self._genes) - 1)
+        b = None
+
+        while True:
+            b = random.randint(0, len(self._genes) - 1)
+            if a != b:
+                break
+
+        if a > b:
+            a, b = b, a
+
+        cantidad_genes_afectados = b - a + 1
+
+        for i in range(math.floor(cantidad_genes_afectados / 2)):
+            self._genes[a + i], self._genes[b - i] = self._genes[b - i], self._genes[a + i]
+
+        self._fitness = None
+    
 
     def set_costo(self, costo):
         self._costo = costo
