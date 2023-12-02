@@ -54,14 +54,14 @@ def handle_iniciar():
     except:
         return "No se pudo parsear el json", 400
 
-    control_ejecucion["ejecutar"] = True
-
     archivo = ArchivoATSP(f"./data/{config['nombre_archivo']}")
 
     solucionador = SolucionadorATSP(
         archivo,
         config
-    )    
+    )
+
+    control_ejecucion["ejecutar"] = True
 
     def ejecucion_concurrente():        
         solucionador.ejecutar(control_ejecucion)
