@@ -15,9 +15,12 @@ class ATSPMatrix {
         const lines = text.split('\n');
 
         let matrixStartLine = 0;
-        while (lines[matrixStartLine] != "EDGE_WEIGHT_SECTION")
+        while (lines[matrixStartLine] != "EDGE_WEIGHT_SECTION" && matrixStartLine < lines.length)
             matrixStartLine++;
         matrixStartLine++;
+
+        if (matrixStartLine >= lines.length)
+            throw new Error("Invalid ATSP file.");
 
         let currentLine = matrixStartLine;
 

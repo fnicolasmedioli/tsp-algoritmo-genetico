@@ -66,3 +66,18 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+
+.config-form {
+  display: flex;
+  flex-direction: column;
+  margin-top: 1em;
+  align-items: center;
+}
+
+.config-form > * {
+  margin-bottom: 0.5em;
+}
+
+.config-form input, .config-form select {
+  width: fit-content;
+}
