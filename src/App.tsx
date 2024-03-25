@@ -1,22 +1,47 @@
-import './App.css'
-
 import { useState } from 'react';
 
 import ATSPMatrix from './ATSPMatrix';
 import { ConfigManager, defaultConfig } from './ConfigManager';
-import { ProgramConfig } from './types';
+import { Mejora, ProgramConfig } from './types';
 
-// import * as Plotly from 'plotly.js-dist-min';
+import SolucionATSP from './algoritmo-genetico/SolucionATSP';
 
 function App() {
 
   const [config, setConfig] = useState<ProgramConfig>(defaultConfig);
   const [matrix, setMatrix] = useState<ATSPMatrix | null>(null);
   const [isRunning, setRunning] = useState<boolean>(false);
+  const [solucionATSP, setSolucionATSP] = useState<SolucionATSP>();
+  const [mejoras, setMejoras] = useState<Array<Mejora>>([]);
+
+  function runAlgorithm() {
+
+    setMejoras([]);
+    const solucion = new SolucionATSP(config, matrix!);
+    solucion.run(setMejoras);
+
+    setSolucionATSP(solucion);
+    setRunning(true);
+  }
+
+  function stopAlgorithm() {
+    solucionATSP?.stop();
+    setRunning(false);
+  }
+
+  function getCadenaMejoras() {
+
+    let cadena = "";
+    for (const mejora of mejoras) {
+      cadena += `Iteración ${mejora.iteracion}, costo ${mejora.cromosoma.getCosto()}, tiempo (ms) ${mejora.deltaTime} ->\n  ${mejora.cromosoma.getGenes().toString()}\n\n`;
+    }
+    return cadena;
+  }
 
   return (
     <>
       <h2>Algoritmo genético para problema del viajante</h2>
+
       <input type="file" id="file-selector" accept=".atsp" onChange={() => {
 
         setMatrix(null);
@@ -41,16 +66,35 @@ function App() {
 
           reader.readAsText(file)
         }
+
       }} />
 
-      <ConfigManager config={config!} setConfig={setConfig} isRunning={isRunning} />
+      <div style={{ width: "100%", display: "flex", flexWrap: "wrap", columnGap:"20px" }}>
 
-      {
-        matrix &&
-        <button id="boton-iniciar-parar" onClick={() => setRunning(a => !a)}>
-          { isRunning ? "Parar" : "Iniciar" }
-        </button>
-      }
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <ConfigManager config={config!} setConfig={setConfig} isRunning={isRunning} />
+
+          {
+            matrix &&
+            <button id="boton-iniciar-parar" onClick={() => ((isRunning) ? stopAlgorithm() : runAlgorithm())}>
+              { isRunning ? "Parar" : "Iniciar" }
+            </button>
+          }
+        </div>
+
+        <div id="plotly-graph" style={{ flexGrow: 1 }}></div>
+
+      </div>
+
+      <textarea name="" id="" style={{
+        width: "100%",
+        border: "none",
+        height: "200px",
+        padding: 0,
+        position: "relative",
+        top: "10px"
+      }} readOnly value={getCadenaMejoras()}>
+      </textarea>
 
     </>
   )

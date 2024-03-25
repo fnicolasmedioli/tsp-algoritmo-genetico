@@ -16,5 +16,6 @@ export type ProgramConfig = {
 
 export type Mejora = {
     iteracion: number,
-    cromosoma: Cromosoma
+    cromosoma: Cromosoma,
+    deltaTime: number
 };

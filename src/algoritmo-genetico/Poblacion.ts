@@ -8,14 +8,12 @@ export default class Poblacion {
     private matrix: ATSPMatrix;
 
     private poblacion: Array<Cromosoma>;
-    private mejorCromosoma: Cromosoma | null;
 
     constructor(programConfig: ProgramConfig, matrix: ATSPMatrix) {
 
         this.programConfig = programConfig;
         this.matrix = matrix;
         this.poblacion = [];
-        this.mejorCromosoma = null;
     }
 
     public generarPoblacionInicial() {
@@ -24,12 +22,13 @@ export default class Poblacion {
 
         for (let i = 0; i < this.programConfig.tamano_poblacion; i++) {
 
-            const cromosoma = Cromosoma.CromosomaAleatorio(this.programConfig.tamano_poblacion, this.matrix);
+            const cromosoma = Cromosoma.CromosomaAleatorio(this.matrix.getDimension(), this.matrix);
             this.poblacion.push(cromosoma);
-
-            if (this.mejorCromosoma == null || this.mejorCromosoma.getFitness() < cromosoma.getFitness())
-                this.mejorCromosoma = cromosoma;
         }
+    }
+
+    private ordenarPoblacion() {
+        this.poblacion.sort((a, b) => b.getFitness() - a.getFitness());
     }
 
     public crearHijos() {
@@ -50,6 +49,21 @@ export default class Poblacion {
     }
 
     public getMejorCromosoma() {
-        return this.mejorCromosoma!;
+
+        // Actualizar mejor cromosoma por posibles mutaciones
+
+        this.ordenarPoblacion();
+
+        return this.poblacion[0];
     }
+
+    public recambioGeneracional(hijos: Array<Cromosoma>) {
+
+        this.ordenarPoblacion();
+        hijos.sort((a, b) => b.getFitness() - a.getFitness());
+
+        this.poblacion = this.poblacion.slice(0, this.poblacion.length - this.programConfig.tamano_recambio_generacional);
+        this.poblacion = this.poblacion.concat(hijos.slice(0, this.programConfig.tamano_recambio_generacional));
+    }
+
 }

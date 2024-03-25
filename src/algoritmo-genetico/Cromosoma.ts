@@ -55,6 +55,8 @@ class Cromosoma {
 
 Cromosoma.CromosomaAleatorio = (dimension: number, matrix: ATSPMatrix) => {
 
+    //console.log("se creara un cromosoma aleatorio con dimension: " + dimension);
+
     const genesTemp = [];
     const genes = [];
 
@@ -62,13 +64,15 @@ Cromosoma.CromosomaAleatorio = (dimension: number, matrix: ATSPMatrix) => {
         genesTemp.push(i);
     }
 
-    for (let i = 0; i < genesTemp.length; i++) {
+    for (let i = 0; i < dimension; i++) {
         const randomIndex = Math.floor(Math.random() * genesTemp.length);
         const temp: number = genesTemp[randomIndex];
         genesTemp[randomIndex] = genesTemp[genesTemp.length - 1];
         genesTemp.pop();
         genes.push(temp);
     }
+
+    //console.log("el cromosoma resultante tiene longitud: " + genes.length);
 
     return new Cromosoma(genes, matrix);
 };
