@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 import ATSPMatrix from './ATSPMatrix';
 import { ConfigManager, defaultConfig } from './ConfigManager';
+import { ProgramConfig } from './types';
 
 // import * as Plotly from 'plotly.js-dist-min';
 

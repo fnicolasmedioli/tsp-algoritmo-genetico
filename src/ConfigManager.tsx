@@ -1,12 +1,32 @@
+import { ProgramConfig } from "./types";
+
+import * as Cruzamientos from "./algoritmo-genetico/Cruzamientos";
+import * as SeleccionPadres from "./algoritmo-genetico/SeleccionPadres";
+import * as Mutaciones from "./algoritmo-genetico/Mutaciones";
+
 export const defaultConfig: ProgramConfig = {
     tamano_poblacion: 200,
     hijos_generados_por_iteracion: 50,
     tamano_recambio_generacional: 15,
     probabilidad_mutacion: 0.01,
-    select_padres: "ruleta",
-    select_cruzamiento: "order_crossover",
-    select_mutacion: "inversion"
+    select_padres: SeleccionPadres.seleccionPadresRuleta,
+    select_cruzamiento: Cruzamientos.cruzamientoOrderCrossover,
+    select_mutacion: Mutaciones.mutacionInversion
 };
+
+function mapSelectToConfig(id: string, value: string) {
+
+    switch(id) {
+        case "select_padres":
+            return value === "ruleta" ? SeleccionPadres.seleccionPadresRuleta : SeleccionPadres.seleccionPadresTorneo;
+        case "select_cruzamiento":
+            return value === "order_crossover" ? Cruzamientos.cruzamientoOrderCrossover : Cruzamientos.cruzamientoPositionBasedCrossover;
+        case "select_mutacion":
+            return value === "inversion" ? Mutaciones.mutacionInversion : Mutaciones.mutacionIntercambio;
+        default:
+            return Number(value);
+    }
+}
 
 export function ConfigManager({config, setConfig, isRunning}: {config: ProgramConfig, setConfig: Function, isRunning: boolean}) {
 
@@ -16,7 +36,7 @@ export function ConfigManager({config, setConfig, isRunning}: {config: ProgramCo
 
         setConfig({
             ...config,
-            [id]: value
+            [id]: mapSelectToConfig(id, value)
         });
     };
 
