@@ -7,7 +7,6 @@ import Poblacion from "./Poblacion";
 export default class SolucionATSP {
 
     private programConfig: ProgramConfig;
-    private matrix: ATSPMatrix;
 
     private poblacion: Poblacion;
     private mejoras: Array<Mejora>;
@@ -17,7 +16,6 @@ export default class SolucionATSP {
 
     constructor(programConfig: ProgramConfig, matrix: ATSPMatrix) {
         this.programConfig = programConfig;
-        this.matrix = matrix;        
         this.poblacion = new Poblacion(programConfig, matrix);
         this.mejoras = [];
         this.stopped = false;
