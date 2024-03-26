@@ -75,7 +75,10 @@ function App() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <ConfigManager config={config!} setConfig={setConfig} isRunning={isRunning} />
 
-          <BotonEjecucion running={isRunning} enabled={matrix !== null && isValidConfig(config)} runAlgorithm={runAlgorithm} stopAlgorithm={stopAlgorithm} />
+          <div>
+            <BotonEjecucion running={isRunning} enabled={matrix !== null && isValidConfig(config)} runAlgorithm={runAlgorithm} stopAlgorithm={stopAlgorithm} />
+            <button onClick={() => descargarResultados(config, getCadenaMejoras())} disabled={mejoras.length === 0} style={{ marginLeft: "10px" }}><u>⭳</u></button>
+          </div>
         </div>
 
         <div id="plotly-graph" style={{ flexGrow: 1 }}></div>
@@ -96,6 +99,7 @@ function App() {
   )
 }
 
+
 function isValidConfig(config: ProgramConfig): boolean {
 
   if (config.tamano_poblacion < 2) return false;
@@ -106,6 +110,34 @@ function isValidConfig(config: ProgramConfig): boolean {
   if (config.tamano_recambio_generacional > config.hijos_generados_por_iteracion) return false;
 
   return true;
+}
+
+
+function descargarResultados(config: ProgramConfig, resultados: string) {
+
+  let texto = "Configuración utilizada:\n\n";
+
+  texto += `Tamaño de la población: ${config.tamano_poblacion}\n`;
+  texto += `Hijos generados por iteración: ${config.hijos_generados_por_iteracion}\n`;
+  texto += `Tamaño del recambio generacional: ${config.tamano_recambio_generacional}\n`;
+  texto += `Probabilidad de mutación: ${config.probabilidad_mutacion}\n`;
+  texto += `Selección de padres: ${config.select_padres.name}\n`;
+  texto += `Cruzamiento: ${config.select_cruzamiento.name}\n`;
+  texto += `Mutación: ${config.select_mutacion.name}\n\n`;
+
+  texto += "Resultados:\n\n";
+
+  texto += resultados;
+
+  const blob = new Blob([texto], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const enlace = document.createElement('a');
+  enlace.href = url;
+  enlace.download = "resultados.txt";
+  document.body.appendChild(enlace);
+  enlace.click();
+  URL.revokeObjectURL(url);
+  document.body.removeChild(enlace);
 }
 
 export default App;
