@@ -5,6 +5,7 @@ import { ConfigManager, defaultConfig } from './ConfigManager';
 import { Mejora, ProgramConfig } from './types';
 
 import SolucionATSP from './algoritmo-genetico/SolucionATSP';
+import { BotonEjecucion } from './BotonEjecucion';
 
 function App() {
 
@@ -33,7 +34,7 @@ function App() {
 
     let cadena = "";
     for (const mejora of mejoras) {
-      cadena += `Iteración ${mejora.iteracion}, costo ${mejora.cromosoma.getCosto()}, tiempo (ms) ${mejora.deltaTime} ->\n  ${mejora.cromosoma.getGenes().toString()}\n\n`;
+      cadena += `Iteración ${mejora.iteracion}, costo ${mejora.cromosoma.getCosto()}, tiempo (ms) ${mejora.deltaTime} ->\n  ${mejora.cromosoma.getGenes().toString() + "," + mejora.cromosoma.getGenes()[0]}\n\n`;
     }
     return cadena;
   }
@@ -74,12 +75,7 @@ function App() {
         <div style={{ display: "flex", flexDirection: "column" }}>
           <ConfigManager config={config!} setConfig={setConfig} isRunning={isRunning} />
 
-          {
-            matrix &&
-            <button id="boton-iniciar-parar" onClick={() => ((isRunning) ? stopAlgorithm() : runAlgorithm())}>
-              { isRunning ? "Parar" : "Iniciar" }
-            </button>
-          }
+          <BotonEjecucion running={isRunning} enabled={matrix !== null && isValidConfig(config)} runAlgorithm={runAlgorithm} stopAlgorithm={stopAlgorithm} />
         </div>
 
         <div id="plotly-graph" style={{ flexGrow: 1 }}></div>
@@ -98,6 +94,18 @@ function App() {
 
     </>
   )
+}
+
+function isValidConfig(config: ProgramConfig): boolean {
+
+  if (config.tamano_poblacion < 2) return false;
+  if (config.hijos_generados_por_iteracion < 1) return false;
+  if (config.tamano_recambio_generacional < 1) return false;
+  if (config.probabilidad_mutacion < 0 || config.probabilidad_mutacion > 1) return false;
+  if (config.tamano_recambio_generacional > config.tamano_poblacion) return false;
+  if (config.tamano_recambio_generacional > config.hijos_generados_por_iteracion) return false;
+
+  return true;
 }
 
 export default App;

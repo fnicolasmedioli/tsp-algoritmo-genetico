@@ -100,3 +100,9 @@ button:focus-visible {
   height: 500px;
   box-shadow: inset 0px 0px 0px 1px #ffffff;
 }
+
+.disabled-button:hover {
+  cursor: not-allowed;
+  border-color: transparent;
+
+}
