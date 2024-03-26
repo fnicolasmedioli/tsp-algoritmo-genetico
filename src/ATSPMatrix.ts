@@ -15,7 +15,7 @@ class ATSPMatrix {
         const lines = text.split('\n');
 
         let matrixStartLine = 0;
-        while (lines[matrixStartLine] != "EDGE_WEIGHT_SECTION" && matrixStartLine < lines.length)
+        while (!lines[matrixStartLine].startsWith("EDGE_WEIGHT_SECTION") && matrixStartLine < lines.length)
             matrixStartLine++;
         matrixStartLine++;
 
@@ -24,7 +24,7 @@ class ATSPMatrix {
 
         let currentLine = matrixStartLine;
 
-        while (lines[currentLine] != "EOF")
+        while (!lines[currentLine].startsWith("EOF"))
         {
             const line = lines[currentLine];
             const parsedLine = line.split(" ").filter(el => el != "").map((value) => parseInt(value));
