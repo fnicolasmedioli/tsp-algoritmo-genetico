@@ -77,7 +77,12 @@ function App() {
 
           <div>
             <BotonEjecucion running={isRunning} enabled={matrix !== null && isValidConfig(config)} runAlgorithm={runAlgorithm} stopAlgorithm={stopAlgorithm} />
-            <button onClick={() => descargarResultados(config, getCadenaMejoras())} disabled={mejoras.length === 0} style={{ marginLeft: "10px" }}><u>⭳</u></button>
+
+
+            <button onClick={() => descargarResultados(config, getCadenaMejoras())} disabled={mejoras.length === 0} style={{ marginLeft: "10px" }} className={mejoras.length === 0 ? "disabled-button": ""}><u>⭳</u></button>
+
+
+
           </div>
         </div>
 
