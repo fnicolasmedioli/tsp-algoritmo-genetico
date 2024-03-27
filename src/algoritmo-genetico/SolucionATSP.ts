@@ -68,7 +68,14 @@ export default class SolucionATSP {
                     y: this.mejoras.map(m => m.cromosoma.getCosto()),
                     type: 'scatter',
                     marker: {color: 'blue'},
-                }]);
+                }], {
+                    xaxis: {
+                      type: 'log',
+                      autorange: true,
+                      dtick: 1,
+                      tickformat: '.1f'
+                    }
+                });
 
                 setMejoras([...this.mejoras]);
             }
