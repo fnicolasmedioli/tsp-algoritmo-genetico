@@ -1,4 +1,4 @@
-export type MutacionFn = (genes: number[]) => void;
+export type MutacionFn = ((genes: number[]) => void) & { descripcion: string };
 
 export const mutacionInversion: MutacionFn = (genes: number[]) => {
 
@@ -11,6 +11,7 @@ export const mutacionInversion: MutacionFn = (genes: number[]) => {
     subGenes.reverse();
     genes.splice(inicio, subGenes.length, ...subGenes);
 };
+mutacionInversion.descripcion = "Inversión";
 
 export const mutacionIntercambio: MutacionFn = (genes: number[]) => {
 
@@ -21,3 +22,4 @@ export const mutacionIntercambio: MutacionFn = (genes: number[]) => {
     genes[i] = genes[j];
     genes[j] = aux;
 };
+mutacionIntercambio.descripcion = "Intercambio";

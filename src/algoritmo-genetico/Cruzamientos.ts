@@ -1,4 +1,4 @@
-export type CruzamientoFn = (padre1: Array<number>, padre2: Array<number>) => Array<number>;
+export type CruzamientoFn = ((padre1: Array<number>, padre2: Array<number>) => Array<number>) & { descripcion: string };
 
 export const cruzamientoOrderCrossover: CruzamientoFn = (padre1: Array<number>, padre2: Array<number>) => {
 
@@ -29,7 +29,8 @@ export const cruzamientoOrderCrossover: CruzamientoFn = (padre1: Array<number>, 
     }
 
     return hijo;
-}
+};
+cruzamientoOrderCrossover.descripcion = "Order crossover";
 
 
 export const cruzamientoPositionBasedCrossover: CruzamientoFn = (padre1: Array<number>, padre2: Array<number>) => {
@@ -57,4 +58,5 @@ export const cruzamientoPositionBasedCrossover: CruzamientoFn = (padre1: Array<n
     }
 
     return hijo;
-}
+};
+cruzamientoPositionBasedCrossover.descripcion = "Position based crossover";

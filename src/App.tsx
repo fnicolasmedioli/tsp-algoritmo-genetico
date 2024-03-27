@@ -77,12 +77,7 @@ function App() {
 
           <div>
             <BotonEjecucion running={isRunning} enabled={matrix !== null && isValidConfig(config)} runAlgorithm={runAlgorithm} stopAlgorithm={stopAlgorithm} />
-
-
             <button onClick={() => descargarResultados(config, getCadenaMejoras())} disabled={mejoras.length === 0} style={{ marginLeft: "10px" }} className={mejoras.length === 0 ? "disabled-button": ""}><u>⭳</u></button>
-
-
-
           </div>
         </div>
 
@@ -126,9 +121,9 @@ function descargarResultados(config: ProgramConfig, resultados: string) {
   texto += `Hijos generados por iteración: ${config.hijos_generados_por_iteracion}\n`;
   texto += `Tamaño del recambio generacional: ${config.tamano_recambio_generacional}\n`;
   texto += `Probabilidad de mutación: ${config.probabilidad_mutacion}\n`;
-  texto += `Selección de padres: ${config.select_padres.name}\n`;
-  texto += `Cruzamiento: ${config.select_cruzamiento.name}\n`;
-  texto += `Mutación: ${config.select_mutacion.name}\n\n`;
+  texto += `Selección de padres: ${config.select_padres.descripcion}\n`;
+  texto += `Cruzamiento: ${config.select_cruzamiento.descripcion}\n`;
+  texto += `Mutación: ${config.select_mutacion.descripcion}\n\n`;
 
   texto += "Resultados:\n\n";
 

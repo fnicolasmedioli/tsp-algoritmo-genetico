@@ -1,6 +1,6 @@
 import Cromosoma from "./Cromosoma";
 
-export type SeleccionPadresFn = (poblacion: Array<Cromosoma>) => Array<Cromosoma>;
+export type SeleccionPadresFn = ((poblacion: Array<Cromosoma>) => Array<Cromosoma>) & { descripcion: string };
 
 export const seleccionPadresRuleta: SeleccionPadresFn = (poblacion: Array<Cromosoma>) => {
 
@@ -35,6 +35,8 @@ export const seleccionPadresRuleta: SeleccionPadresFn = (poblacion: Array<Cromos
 
     return padres;
 };
+seleccionPadresRuleta.descripcion = "Ruleta";
+
 
 export const seleccionPadresTorneo: SeleccionPadresFn = (poblacion: Array<Cromosoma>) => {
 
@@ -53,3 +55,4 @@ export const seleccionPadresTorneo: SeleccionPadresFn = (poblacion: Array<Cromos
 
     return padres;    
 };
+seleccionPadresTorneo.descripcion = "Torneo";
